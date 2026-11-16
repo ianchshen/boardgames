@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>諮商室桌遊檢索與輔導推薦</title>
+  <style>
+    /* 1. 基礎 CSS 樣式與變數設定 */
+    :root {
+      --primary-color: #4a6fa5;
+      --primary-hover: #3b5984;
+      --secondary-color: #ff9f1c;
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --text-main: #2c3e50;
+      --text-muted: #666666;
+      --border-radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding: 20px 10px;
+      background: linear-gradient(135deg, #4a6fa5, #6b8cce);
+      color: white;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    /* 2. 篩選表單區塊 */
+    .filter-section {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 25px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .filter-group label {
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .filter-group select, .filter-group input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .filter-group select:focus, .filter-group input:focus {
+      border-color: var(--primary-color);
+    }
+
+    .btn-container {
+      text-align: center;
+    }
+
+    .btn-search {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      box-shadow: 0 4px 10px rgba(74, 111, 165, 0.3);
+    }
+
+    .btn-search:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    /* 3. 卡片呈現區塊 */
+    .result-count {
+      max-width: 1200px;
+      margin: 0 auto 15px auto;
+      font-size: 1rem;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .game-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .game-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 12px;
+    }
+
+    .game-img {
+      width: 75px;
+      height: 75px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #eaeaea;
+      background-color: #f8fafc;
+      flex-shrink: 0;
+    }
+
+    .game-title {
+      font-size: 1.2rem;
+      color: var(--text-main);
+      font-weight: bold;
+    }
+
+    .game-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .badge-meta {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.8rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .badge-guidance {
+      background-color: #fef3c7;
+      color: #b45309;
+      font-size: 0.8rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .game-summary {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 15px;
+      flex-grow: 1;
+    }
+
+    .btn-detail {
+      background-color: #ffffff;
+      color: var(--primary-color);
+      border: 1.5px solid var(--primary-color);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-detail:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    /* 4. 彈出視窗 (Modal) 樣式 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-container {
+      background: white;
+      width: 100%;
+      max-width: 700px;
+      max-height: 85vh;
+      border-radius: var(--border-radius);
+      overflow-y: auto;
+      padding: 25px;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #aaa;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    .modal-close:hover {
+      color: #333;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+      padding-right: 30px;
+    }
+
+    .modal-section {
+      margin-top: 15px;
+      border-top: 1px solid #eee;
+      padding-top: 12px;
+    }
+
+    .modal-section h4 {
+      color: var(--text-main);
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .modal-section p, .modal-section ol {
+      font-size: 0.92rem;
+      color: #444;
+      padding-left: 20px;
+    }
+
+    .modal-section li {
+      margin-bottom: 6px;
+    }
+/* 📱 針對手機小螢幕 (寬度小於 600px) 的專屬優化 */
+@media (max-width: 600px) {
+  body {
+    padding: 10px; /* 縮小網頁邊距，讓內容空間更大 */
+  }
+
+  header {
+    padding: 15px 10px;
+  }
+
+  header h1 {
+    font-size: 1.4rem; /* 調小手機上的標題字型 */
+  }
+
+  .filter-section {
+    padding: 15px;
+  }
+
+  .filter-grid {
+    grid-template-columns: 1fr; /* 確保手機上篩選條件嚴格保持單欄 */
+    gap: 10px;
+  }
+
+  .btn-search {
+    width: 100%; /* 手機上搜尋按鈕擴展為滿寬，方便大拇指點擊 */
+    padding: 12px 0;
+  }
+
+  .game-grid {
+    grid-template-columns: 1fr; /* 手機上卡片單欄垂直排列 */
+  }
+
+  .modal-container {
+    padding: 18px;
+    width: 95%; /* 彈窗佔據手機 95% 寬度，提升可讀性 */
+    max-height: 90vh;
+  }
+}
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>諮商室桌遊檢索與輔導推薦</h1>
+    <p>專為專任輔導教師設計：結合遊戲類型與輔導目的，快速尋找最適切的輔導桌遊</p>
+  </header>
+
+  <!-- 篩選選單區塊 -->
+  <section class="filter-section">
+    <div class="filter-grid">
+      
+      <div class="filter-group">
+        <label for="typeFilter">🎮 遊戲類型（分類）</label>
+        <select id="typeFilter">
+          <option value="ALL">全部類型</option>
+          <option value="合作/動作">合作/動作</option>
+          <option value="思考/反應">思考/反應</option>
+          <option value="記憶">記憶</option>
+          <option value="推理/解謎">推理/解謎</option>
+          <option value="敘事/投射">敘事/投射</option>
+          <option value="聊心/認知">聊心/認知</option>
+          <option value="策略">策略</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="goalFilter">🎯 輔導目的 / 體驗目標</label>
+        <select id="goalFilter">
+          <option value="ALL">全部目的</option>
+          <option value="適合說心事">適合說心事 / 內在覺察</option>
+          <option value="拉近關係">拉近關係 / 深化互動</option>
+          <option value="放鬆心情">放鬆心情 / 輕鬆破冰</option>
+          <option value="練習溝通">練習溝通 / 同理心</option>
+          <option value="團隊合作">團隊合作 / 共同對抗</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="timeFilter">⏱️ 遊玩時間長短</label>
+        <select id="timeFilter">
+          <option value="ALL">不限時間</option>
+          <option value="SHORT">短時間（10-20分鐘）</option>
+          <option value="MEDIUM">中等時間（20-40分鐘）</option>
+          <option value="LONG">長 / 自訂（40分鐘以上）</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="playerInput">👥 參與人數（請輸入數字）</label>
+        <input type="number" id="playerInput" placeholder="例：4" min="1" max="20">
+      </div>
+
+    </div>
+
+    <div class="btn-container">
+      <button class="btn-search" onclick="filterGames()">🔍 尋找推薦桌遊</button>
+    </div>
+  </section>
+
+  <!-- 搜尋結果統計與顯示區塊 -->
+  <div class="result-count" id="resultCount">共找到 23 款符合條件的桌遊</div>
+  <main class="game-grid" id="gameGrid"></main>
+
+  <!-- 詳細規則與輔導建議彈出視窗 (Modal) -->
+  <div class="modal-overlay" id="gameModal">
+    <div class="modal-container">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <h2 class="modal-title" id="modalTitle">遊戲名稱</h2>
+      
+      <div class="modal-section">
+        <h4>📋 基本資訊與輔導標籤</h4>
+        <p id="modalMeta"></p>
+      </div>
+
+      <div class="modal-section">
+        <h4>💡 輔導應用建議 (Counseling Guidance)</h4>
+        <p id="modalCounseling" style="color: #0369a1; font-weight: 500;"></p>
+      </div>
+
+      <div class="modal-section">
+        <h4>🎯 遊戲目標</h4>
+        <p id="modalGoal"></p>
+      </div>
+
+      <div class="modal-section">
+        <h4>📜 基礎玩法與流程</h4>
+        <ol id="modalSteps"></ol>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 預設預覽圖片 (SVG Data URI)
+    const defaultIcon = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%234a6fa5'/><text x='50%' y='55%' font-size='40' fill='white' text-anchor='middle' dominant-baseline='middle'>🎲</text></svg>";
+
+    // 完整的 23 款諮商室桌遊資料庫
+    const boardGamesDatabase = [
+      // 1. 合作/動作
+      {
+        id: "rolling-witch",
+        name: "搖滾巫奇 (The Rolling Witch)",
+        type: "合作/動作",
+        goals: ["放鬆心情", "團隊合作", "拉近關係"],
+        minPlayers: 2, maxPlayers: 5,
+        timeCategory: "SHORT",
+        timeText: "10-20分鐘",
+        img: "搖滾巫奇.png",
+        summary: "玩家兩人一組操控圖板傾斜，引導大鋼珠女巫滾動尋找魔法道具，極具體感互動樂趣。",
+        counselingAdvice: "非常適合肢體僵硬、防衛心強的個案。透過雙人傾斜圖板的合作過程，能迅速打破生疏感，觀察個案在面對「失控/出錯」時的情緒反應與挫折忍受力。",
+        goalText: "兩人組隊合作傾斜圖板引導女巫尋找道具，獲得最多魔法果實者獲勝。",
+        steps: [
+          "組裝樹木與支柱，放置專屬角色小板塊與沙漏。",
+          "兩人一組，翻開魔法道具標記並啟動 1 分鐘沙漏。",
+          "共同操控角落支柱傾斜圖板，引導女巫滾動至目標位置。",
+          "成功則獲得魔法果實；掉入坑洞或帽子掉落則回合強制結束。"
+        ]
+      },
+      {
+        id: "rhino-hero",
+        name: "超級犀牛！ (Rhino Hero)",
+        type: "合作/動作",
+        goals: ["放鬆心情", "拉近關係"],
+        minPlayers: 2, maxPlayers: 5,
+        timeCategory: "SHORT",
+        timeText: "10-15分鐘",
+        img: "超級犀牛.png",
+        summary: "3D 疊高遊戲，玩家輪流建造牆壁與屋頂，同時維持高樓平衡並移動犀牛。",
+        counselingAdvice: "適合做為諮商初期破冰工具。在手抖、高樓晃動的緊張歡樂氛圍中，能有效降低抗拒感，亦可探討個案在面臨壓力時的因應策略與焦慮表現。",
+        goalText: "最先將手牌屋頂卡全部蓋完，或在大樓倒塌時手牌剩餘最少者獲勝。",
+        steps: [
+          "放置地基卡，依人數發放屋頂手牌。",
+          "當前玩家若遇到上一家打出犀牛卡，需先移動犀牛木棋。",
+          "依照指示線折彎牆壁卡並擺放妥當，再蓋上手牌中的屋頂卡。",
+          "注意屋頂卡特殊功能（如 Skip、+1、迴轉），維護高樓結構不倒塌。"
+        ]
+      },
+      {
+        id: "hoot-owl-hoot",
+        name: "Hoot Owl Hoot! (小小貓頭鷹)",
+        type: "合作/動作",
+        goals: ["團隊合作", "練習溝通"],
+        minPlayers: 2, maxPlayers: 4,
+        timeCategory: "SHORT",
+        timeText: "15分鐘",
+        img: "小小貓頭鷹.png",
+        summary: "完全合作的棋盤遊戲，玩家需在太陽升起前，攜手將所有貓頭鷹安全送回樹巢。",
+        counselingAdvice: "無個人勝負，全體共甘苦。適合用於練習「溝通協商」與「資源共享」，引導個案體會團隊互助的溫暖與整體目標達成感。",
+        goalText: "在太陽指標走到終點前，合作將所有貓頭鷹送回樹巢。",
+        steps: [
+          "選擇 3~6 隻貓頭鷹放在起點，發給每人 3 張公開手牌。",
+          "若手中有「太陽卡」必須強制打出，使太陽指標前進 1 格。",
+          "打出顏色卡可將貓頭鷹移至前方最近的該顏色空格，可善用「飛越機制」跨越前方貓頭鷹。"
+        ]
+      },
+
+      // 2. 思考/反應
+      {
+        id: "7-ate-9",
+        name: "7 ate 9 (數字急轉彎)",
+        type: "思考/反應",
+        goals: ["放鬆心情"],
+        minPlayers: 2, maxPlayers: 4,
+        timeCategory: "SHORT",
+        timeText: "5-10分鐘",
+        img: "數字急轉彎.png",
+        summary: "快速心算與即時搶答遊戲，結合黃色大數字與角落 ±1、±2、±3 運算。",
+        counselingAdvice: "極具刺激感與專注激勵效果，可用於協助過動或注意力不集中的學生進行心智能量釋放與高專注鍛鍊。",
+        goalText: "最快將個人抽牌堆與手牌全部出完者獲勝。",
+        steps: [
+          "洗牌後平均分發為個人抽牌堆，中央翻開一張起始題目牌。",
+          "喊開始後所有人同時心算（中央大數 ± 角落小數），符合答案者立刻搶打手牌。",
+          "出牌後中央題目瞬間改變，所有人需重新心算並繼續搶出。"
+        ]
+      },
+      {
+        id: "take-6",
+        name: "Take 6! (誰是牛頭王)",
+        type: "思考/反應",
+        goals: ["放鬆心情", "拉近關係"],
+        minPlayers: 2, maxPlayers: 10,
+        timeCategory: "MEDIUM",
+        timeText: "20-30分鐘",
+        img: "誰是牛頭王.png",
+        summary: "數字出牌與風險規避遊戲，玩家同時出牌並由小到大排列，擺放第 6 張者需吃牌扣分。",
+        counselingAdvice: "呈現「非預期挫折」與「風險評估」極佳的媒材。可引導個案討論「即使做了最合理的選擇，依然可能遭遇非預期挫折」的心態調適。",
+        goalText: "避免拿到帶有牛頭標籤的卡牌，遊戲結束時累計牛頭負分最少者獲勝。",
+        steps: [
+          "每人發 10 張手牌，中央擺放 4 列起始牌。",
+          "每回合所有人秘密選 1 張牌同時翻開，依數字由小到大順序接在數值最接近且小於該牌的列尾。",
+          "若卡牌成為該列「第 6 張」，需收走前 5 張作為扣分牌。"
+        ]
+      },
+      {
+        id: "we-will-rock-you",
+        name: "We Will Rock You (搖滾節奏)",
+        type: "思考/反應",
+        goals: ["放鬆心情", "拉近關係"],
+        minPlayers: 4, maxPlayers: 12,
+        timeCategory: "MEDIUM",
+        timeText: "20-30分鐘",
+        img: "搖滾節奏.png",
+        summary: "跟著「蹦-蹦-啪」經典節奏進行肢體手勢接力點名，充滿歡笑與反應挑戰。",
+        counselingAdvice: "團體輔導破冰的神器，能迅速活絡團體氣氛，幫助成員放鬆防衛，並提升肢體協調與社交注意力。",
+        goalText: "順暢維持節奏並精準傳遞手勢，遊戲結束時擁有最少懲罰卡者獲勝。",
+        steps: [
+          "全體保持「拍大腿兩下、拍手一次」的『蹦-蹦-啪』節奏。",
+          "發起人在『啪』的時間點比出自己的手勢，再接目標玩家的手勢。",
+          "被點名者需順暢接力比出自己與下一人的手勢，卡頓或比錯者需收下懲罰卡。"
+        ]
+      },
+
+      // 3. 記憶
+      {
+        id: "deja-vu",
+        name: "Deja-vu (記憶黑洞)",
+        type: "記憶",
+        goals: ["放鬆心情"],
+        minPlayers: 2, maxPlayers: 6,
+        timeCategory: "SHORT",
+        timeText: "15分鐘",
+        img: "記憶黑洞.png",
+        summary: "考驗既視感與短期記憶，所有物品在牌庫出現兩次，玩家需在確定第二次出現時搶抓物件。",
+        counselingAdvice: "體會「記憶不可靠」與「衝動控制」。輔導中可探討個案在現實生活中因「衝動下決定」或「自我錯覺」所帶來的影響。",
+        goalText: "正確搶抓出現第二次的物品，避開隱藏黑洞牌，三輪累計得分最高者獲勝。",
+        steps: [
+          "中央鋪開 36 項物品，牌庫盲抽 3 張作為隱藏黑洞牌。",
+          "輪流翻開牌庫，當確定某物品已出現第二次時，立刻搶抓該物品配件。",
+          "若抓錯（後續又翻出該物品或出現在黑洞牌），該輪直接出局且分數歸零。"
+        ]
+      },
+      {
+        id: "chicken-cha-cha",
+        name: "拔毛運動會 (Chicken Cha Cha Cha)",
+        type: "記憶",
+        goals: ["放鬆心情", "拉近關係"],
+        minPlayers: 2, maxPlayers: 4,
+        timeCategory: "SHORT",
+        timeText: "20分鐘",
+        img: "拔毛運動會.png",
+        summary: "經典記憶賽跑，小雞要在環形跑道上記住中央圖案前進，並超越對手拔光羽毛。",
+        counselingAdvice: "充滿趣味的競爭遊戲，適合青少年與兒童。除了鍛鍊空間記憶，也能觀察個案在面對「被超越/被剝奪」時的情緒反應與同儕互動。",
+        goalText: "成功超越所有對手並拔光他們身上的羽毛者獲得勝利。",
+        steps: [
+          "跑道卡圍成圓圈，中央蓋放 12 張八角雞窩卡。",
+          "觀察小雞前方跑道的圖案，翻開中央對應的雞窩卡。",
+          "翻對可前進 1 格並繼續翻牌；翻錯則換下一位。",
+          "超越前方小雞時可拔走其身上的羽毛。"
+        ]
+      },
+
+      // 4. 推理/解謎
+      {
+        id: "davinci-code",
+        name: "DaVinci code (終極密碼)",
+        type: "推理/解謎",
+        goals: ["放鬆心情"],
+        minPlayers: 2, maxPlayers: 4,
+        timeCategory: "SHORT",
+        timeText: "15分鐘",
+        img: "終極密碼.png",
+        summary: "邏輯推理與演繹遊戲，玩家依「左小右大」規則排列黑白數字牌，嘗試猜中對手密碼。",
+        counselingAdvice: "極具專注與邏輯思考樂趣，能幫助個案建立「從已知資訊進行合理推論」的能力，培養耐心與細緻觀測力。",
+        goalText: "成功推理並猜中對手的所有隱藏數字牌，成為全場唯一未被破譯者。",
+        steps: [
+          "抽牌並立於面前，嚴格遵循「由左至右、小到大（同數字黑左白右）」排列。",
+          "回合中先抽 1 張新牌，指定對手的一張牌並猜測其數字。",
+          "猜對對手公開該牌，可選擇 PASS 或繼續猜；猜錯則必須公開自己剛抽到的牌。"
+        ]
+      },
+
+      // 5. 敘事/投射
+      {
+        id: "once-upon-a-time",
+        name: "從前從前...",
+        type: "敘事/投射",
+        goals: ["適合說心事", "練習溝通"],
+        minPlayers: 2, maxPlayers: 6,
+        timeCategory: "MEDIUM",
+        timeText: "20-40分鐘",
+        img: "從前從前.png",
+        summary: "說故事紙牌遊戲，玩家扮演說書人，運用故事卡構思情節並將故事引導至自己的結局。",
+        counselingAdvice: "極佳的投射與敘事治療工具。個案在創作故事的過程中，常會無意識地將個人的生活經驗、內在渴望或壓抑衝突投射於故事角色與情節中。",
+        goalText: "合理地將手上的故事卡全數打出，並順暢串聯至手上的結局卡。",
+        steps: [
+          "每人發放故事卡與 1 張秘密結局卡，由說書人以「從前從前...」開頭。",
+          "講到手牌關鍵字即可打出該卡，情節需合乎邏輯。",
+          "其他玩家可運用關鍵字或中斷卡奪取說書權。",
+          "手牌用盡並成功接續結局卡者獲勝。"
+        ]
+      },
+      {
+        id: "book-selector",
+        name: "選書師 (Book Selector)",
+        type: "敘事/投射",
+        goals: ["適合說心事", "練習溝通", "拉近關係"],
+        minPlayers: 3,
+        maxPlayers: 8,
+        timeCategory: "LONG",
+        timeText: "30-45分鐘",
+        img: "選書師-1.jpg", // 若有圖片可改為 "book-selector.jpg"
+        summary: "扮演選書師與顧客，根據顧客的職業與閱讀偏好，即興推薦最貼切的書籍並進行秘密投票。",
+        counselingAdvice: "非常適合用於同理心與表達訓練。選書師需要站在『顧客角度』進行傾聽與換位思考，並透過即興推薦練習口語表達與內在想法投射。",
+        goalText: "精準推薦符合顧客需求的書籍，獲得顧客與選書師同儕的投票認同，累積最高得分者獲勝。",
+        steps: [
+          "<strong>階段一（客人進門）：</strong>顧客抽取顧客卡（年齡、職業、偏好）與興趣標記，進行 1 分鐘自我介紹。",
+          "<strong>階段二（選書師自薦）：</strong>選書師從手牌打出 1 張書本卡，在 30 秒內結合顧客特徵說明推薦理由（3-4人模式每人推薦 2 本）。",
+          "<strong>階段三（預測與投票）：</strong>所有人於屏風後秘密投票，選書師可投 1-3 本書，顧客使用專用標記投票。",
+          "<strong>階段四（計分與補牌）：</strong>揭曉投票，選書師得 1 分，顧客票算 2 分，投中人氣書有額外獎勵。結束後補滿 5 張手牌並輪替顧客。"
+        ]
+      },
+
+      // 6. 聊心/認知
+      {
+        id: "icontact",
+        name: "誰知我心 (Icon'tact)",
+        type: "聊心/認知",
+        goals: ["適合說心事", "拉近關係", "練習溝通"],
+        minPlayers: 3, maxPlayers: 6,
+        timeCategory: "MEDIUM",
+        timeText: "20-30分鐘",
+        img: "誰知我心.png",
+        summary: "圖像投射與情感表達桌遊，玩家根據出題情境選擇圖案卡（Icon）表達內心感受。",
+        counselingAdvice: "幫助口語表達較不暢通或難以命名情緒的個案，透過抽象圖像作為媒介，安全地表達內在情緒與經驗。",
+        goalText: "透過圖案卡精準表達個人感受，獲得成員間最高的共鳴與認同。",
+        steps: [
+          "每位玩家手持 5 張圖案卡。",
+          "出題者公布主題（如：「初次到諮商室的感受」）。",
+          "所有人挑選最符合該感受的圖案卡打出，並輪流口頭解釋理由。",
+          "成員進行評估與共鳴給分，補充手牌後輪替出題。"
+        ]
+      },
+      {
+        id: "archetype-56",
+        name: "原型56心靈互動卡",
+        type: "聊心/認知",
+        goals: ["適合說心事"],
+        minPlayers: 1, maxPlayers: 8,
+        timeCategory: "MEDIUM",
+        timeText: "30-40分鐘",
+        img: "原型56心靈互動卡.png",
+        summary: "結合榮格心理學原型理論，包含 56 種原型角色（光明面與陰影面）與生活情境題卡。",
+        counselingAdvice: "深度自我覺察工具。適合單人個別晤談或自我探索，幫助個案辨識當前的內在人格角色、防衛機制與未發揮的光明天賦。",
+        goalText: "透過原型卡進行內在對話、自我覺察與關係投射（無勝負之分）。",
+        steps: [
+          "設定探索議題或抽選生活情境卡。",
+          "從 56 張原型卡中直覺挑選最能代表當下狀態的角色。",
+          "閱讀與討論卡片上方的「光明天賦」與下方的「陰影盲點」。",
+          "進行內在整合與轉化對話。"
+        ]
+      },
+      {
+        id: "magic-element",
+        name: "魔法元素之旅",
+        type: "聊心/認知",
+        goals: ["適合說心事", "練習溝通"],
+        minPlayers: 2, maxPlayers: 6,
+        timeCategory: "MEDIUM",
+        timeText: "30-40分鐘",
+        img: "魔法元素之旅.png",
+        summary: "生涯與探索主題地圖桌遊，結合問句卡、能量卡與金幣獎勵互動機制。",
+        counselingAdvice: "非常完整的結構化團體/個別諮商工具，透過溫暖的問句與同儕間「能量卡給予」，營造極具正向賦能與同理支持的氛圍。",
+        goalText: "在地圖旅程中回答問句、給予夥伴能量卡與金幣，完成自我探索。",
+        steps: [
+          "擲骰在遊戲地圖上前進，停留在不同區域抽取「魔法問句卡」。",
+          "回答卡片上的問題，其他玩家可進行延伸提問（獲金幣）。",
+          "夥伴選取「魔法能量卡」給予回答者肯定與回饋。",
+          "最後分享給予與獲得能量卡的心得。"
+        ]
+      },
+      {
+        id: "flip-change",
+        name: "FL!P 換言一新",
+        type: "聊心/認知",
+        goals: ["適合說心事", "拉近關係"],
+        minPlayers: 2, maxPlayers: 6,
+        timeCategory: "MEDIUM",
+        timeText: "20-30分鐘",
+        img: "換言一新.png",
+        summary: "將弱項轉化為優勢的認知重塑牌卡，包含真偽莫辨、全力以赴與心心相印三階段。",
+        counselingAdvice: "實踐認知行為治療（CBT）「外化與重塑概念」的絕佳工具。引導個案重新看待自己的特質，將自卑的「特質弱項」轉化為「獨特優勢」。",
+        goalText: "透過故事分享與價值重塑，重新認識自我與夥伴特質。",
+        steps: [
+          "第一階段：挑選代表自己的弱項卡並加入假卡，講故事供他人猜測。",
+          "第二階段：面對情境挑戰，解釋自己的卡片如何發揮正向作用並投票。",
+          "第三階段：秘密選擇符合自己的卡片，由夥伴進行猜心與深化理解。"
+        ]
+      },
+      {
+        id: "talent-card",
+        name: "天賦卡",
+        type: "聊心/認知",
+        goals: ["適合說心事"],
+        minPlayers: 1, maxPlayers: 6,
+        timeCategory: "MEDIUM",
+        timeText: "20-30分鐘",
+        img: "天賦卡.png",
+        summary: "基於多元智能理論設計，包含 64 張無文字圖卡與特質雷達圖配件。",
+        counselingAdvice: "適合用於學習輔導、生涯規劃與優勢盤點。透過直覺選牌與背面的能力分類，幫助個案建構自信並探索個人天賦領域。",
+        goalText: "繪製個人能力分布雷達圖，盤點核心優勢與落地應用方向。",
+        steps: [
+          "無提示下攤開 64 張圖卡，使用者憑直覺挑選吸引自己的卡片。",
+          "分享選牌理由與圖像投射聯想。",
+          "將卡片翻面，按 8 種底色分類統計張數。",
+          "在雷達圖配件上記錄並連線，討論優勢運用策略。"
+        ]
+      },
+      {
+        id: "encourage-card",
+        name: "鼓舞卡",
+        type: "聊心/認知",
+        goals: ["適合說心事", "拉近關係"],
+        minPlayers: 1, maxPlayers: 8,
+        timeCategory: "MEDIUM",
+        timeText: "20-30分鐘",
+        img: "鼓舞卡.png",
+        summary: "正向心理學溫暖圖卡，正面為全彩圖像，背面為賦能語句（Empowerment Statement）。",
+        counselingAdvice: "極具復原力培養與正向賦能效果。可用於每日溫暖覺察、雙面轉念練習（困境投射轉化為正面語句）或團體結束時的成員相互祝福。",
+        goalText: "獲得內在正向力量與同儕優勢賦能（無勝負競爭）。",
+        steps: [
+          "觀察正面圖畫進行直覺表達與自由聯想。",
+          "翻至背面閱讀賦能語句與關鍵字。",
+          "可結合「陽光週記」進行每日記錄，或作為團體祝福禮物送給夥伴。"
+        ]
+      },
+      {
+        id: "empathy-cards",
+        name: "同理心學習互動卡",
+        type: "聊心/認知",
+        goals: ["練習溝通"],
+        minPlayers: 1, maxPlayers: 6,
+        timeCategory: "MEDIUM",
+        timeText: "30分鐘",
+        img: "同理心學習互動卡.png",
+        summary: "包含 84 張同理心故事圖卡、情緒卡與同理心層次說明圖卡。",
+        counselingAdvice: "專為人際社交技巧訓練（SST）設計。適合有同儕衝動、缺乏換位思考或社交困難的學生，系統化練習「高層次同理心」回應。",
+        goalText: "辨識他人情緒、換位思考並演練高層次同理心回應與修復。",
+        steps: [
+          "觀看同理心故事圖卡並指認主角與配角的情緒。",
+          "角色帶入：思考「如果我是他，現在會想什麼？」。",
+          "出示「同理心的層次」卡，演練高層次同理回應。",
+          "填寫人際議題紀錄表梳理學習心得。"
+        ]
+      },
+      {
+        id: "interpersonal-traits",
+        name: "人際特質覺知卡",
+        type: "聊心/認知",
+        goals: ["練習溝通", "拉近關係"],
+        minPlayers: 1, maxPlayers: 4,
+        timeCategory: "MEDIUM",
+        timeText: "30-40分鐘",
+        img: "人際特質覺知卡.png",
+        summary: "四格連環漫畫情境卡，涵蓋霸凌、分享、退縮等常見同儕人際議題。",
+        counselingAdvice: "協助處理班級人際衝突、同儕排擠或霸凌議題。透過排序故事與角色投射，帶領學生重新書寫健康的人際因應結局。",
+        goalText: "辨識人際特質、連結自我經驗，並學習正向社交行為策略。",
+        steps: [
+          "將 4 張情境圖卡依故事情節排序並描述發生過程。",
+          "搭配「情緒知多少」學習單覺察角色內在想法與情緒。",
+          "透過檢核表對照自我經驗，討論正向回應態度。",
+          "進行「故事重寫」，用健康溝通取代隱忍或攻擊。"
+        ]
+      },
+      {
+        id: "who-is-bestie",
+        name: "誰是麻吉",
+        type: "聊心/認知",
+        goals: ["拉近關係", "練習溝通"],
+        minPlayers: 2, maxPlayers: 6,
+        timeCategory: "MEDIUM",
+        timeText: "20-30分鐘",
+        img: "誰是麻吉.png",
+        summary: "包含心有靈犀、就你懂我、說故事大王與故事接龍四種多元社交玩法。",
+        counselingAdvice: "非常靈活的人際破冰與默契建立工具。透過「二選一價值觀問答」，讓成員在輕鬆歡笑中發現彼此的共通點與獨特性。",
+        goalText: "透過猜心與二選一問答，促進成員間的價值觀交流與相互理解。",
+        steps: [
+          "心有靈犀模式：出題者根據二選一卡片設計問題，大家同時公布答案卡。",
+          "答案相同放『圈區』，不同放『叉區』。",
+          "統計放在『圈區』頻率最高者，獲選為最默契的麻吉夥伴。"
+        ]
+      },
+      {
+        id: "love-fairytale",
+        name: "愛情童話",
+        type: "聊心/認知",
+        goals: ["適合說心事", "練習溝通", "拉近關係"],
+        minPlayers: 2, maxPlayers: 6,
+        timeCategory: "LONG",
+        timeText: "40-60分鐘",
+        img: "愛情童話.png",
+        summary: "專為青少年與大專生情感教育設計，包含戀愛場景圖、正負向階段卡與 210 張字卡。",
+        counselingAdvice: "感情諮商與兩性溝通的最佳媒材。幫助個案釐清在情感關係中的「猜心誤會」、「未滿足需求」與「衝突和解解方」。",
+        goalText: "透過角色猜心與情境敘說，學習同理他人需求並尋找情感和解出口。",
+        steps: [
+          "三人成唬盲猜：運用角色卡進行猜心互動，體驗『憑空猜測』造成的溝通誤會。",
+          "同理需求：搭配愛情場景圖，挑選『需求字卡』與『解方字卡』。",
+          "正負向階段故事：結合版圖與小偶分享愛情經驗，獲得支持與陪伴。"
+        ]
+      },
+
+      // 7. 策略
+      {
+        id: "quietville",
+        name: "Quietville (寧靜小鎮)",
+        type: "策略",
+        goals: ["放鬆心情"],
+        minPlayers: 3, maxPlayers: 5,
+        timeCategory: "MEDIUM",
+        timeText: "30分鐘",
+        img: "寧靜小鎮.png",
+        summary: "建設與怪獸破壞的策略遊戲，玩家需購買建築並應對各種災難怪獸的摧毀。",
+        counselingAdvice: "可引導個案探討「建設與破壞」、「失去與風險管理」。在遊戲中經歷建築被怪獸摧毀的過程，討論現實中面對損失時的心態調適。",
+        goalText: "靈活應對怪獸災難，在 4 次階段計分中獲得最高總得分當選鎮長。",
+        steps: [
+          "回合三選一：購買建築（支付金幣）、招喚災難/怪獸（摧毀建築獲金幣）或使用彩虹卡跳過。",
+          "手上有 2 張金幣卡時必須執行購買。",
+          "翻出投票卡時暫停並進行階段計分（共有 4 種計分維度可選擇）。"
+        ]
+      },
+      {
+        id: "loot",
+        name: "Loot (星海奪寶)",
+        type: "策略",
+        goals: ["團隊合作", "放鬆心情"],
+        minPlayers: 2, maxPlayers: 8,
+        timeCategory: "MEDIUM",
+        timeText: "20-30分鐘",
+        img: "星海奪寶.png",
+        summary: "海盜商船搶奪遊戲，支援個人戰與雙人組隊對抗，透過色彩獨佔與武力比較掠奪寶藏。",
+        counselingAdvice: "適合進行小組團隊合作（組隊模式）或競爭策略觀察。可觀察個案在面對「資源爭奪」時的攻擊性、挫折忍受力與隊友協商策略。",
+        goalText: "搶奪檯面上商船上的金幣寶藏，遊戲結束時扣除手牌負分後總分最高者獲勝。",
+        steps: [
+          "回合二選一：抽 1 張牌 或 打出 1 張牌（商船牌/海盜船牌/特種卡）。",
+          "攻擊同一商船時不同玩家必須使用不同顏色的海盜船。",
+          "輪到自己回合開始時，若在某商船旁的武力為唯一最高，即可成功奪取該商船。"
+        ]
+      }
+    ];
+
+    // 渲染卡片畫面的 Function
+    function renderGames(games) {
+      const grid = document.getElementById('gameGrid');
+      const countLabel = document.getElementById('resultCount');
+      grid.innerHTML = '';
+      countLabel.textContent = `共找到 ${games.length} 款符合條件的桌遊`;
+
+      if (games.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888; padding: 40px;">沒有找到符合篩選條件的桌遊，請試著放寬篩選條件。</p>';
+        return;
+      }
+
+      games.forEach(game => {
+        // 建立輔導目的標籤 HTML
+        const guidanceBadges = game.goals.map(g => `<span class="badge-guidance">🎯 ${g}</span>`).join(' ');
+
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.innerHTML = `
+          <div class="game-header">
+            <img src="${game.img}" alt="${game.name}" class="game-img" onerror="this.src='${defaultIcon}'">
+            <h3 class="game-title">${game.name}</h3>
+          </div>
+          <div class="game-tags">
+            <span class="badge-meta">🏷️ ${game.type}</span>
+            <span class="badge-meta">👥 ${game.minPlayers}-${game.maxPlayers}人</span>
+            <span class="badge-meta">⏱️ ${game.timeText}</span>
+            ${guidanceBadges}
+          </div>
+          <p class="game-summary">${game.summary}</p>
+          <button class="btn-detail" onclick="openModal('${game.id}')">檢視詳細規則與輔導建議</button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // 多維度動態篩選邏輯
+    function filterGames() {
+      const selectedType = document.getElementById('typeFilter').value;
+      const selectedGoal = document.getElementById('goalFilter').value;
+      const selectedTime = document.getElementById('timeFilter').value;
+      const playerCount = parseInt(document.getElementById('playerInput').value, 10);
+
+      const filtered = boardGamesDatabase.filter(game => {
+        // 1. 遊戲類型過濾
+        if (selectedType !== 'ALL' && game.type !== selectedType) {
+          return false;
+        }
+
+        // 2. 輔導目的過濾
+        if (selectedGoal !== 'ALL' && !game.goals.includes(selectedGoal)) {
+          return false;
+        }
+
+        // 3. 遊玩時間過濾
+        if (selectedTime !== 'ALL' && game.timeCategory !== selectedTime) {
+          return false;
+        }
+
+        // 4. 參與人數過濾 (人數需介於 minPlayers 與 maxPlayers 之間)
+        if (!isNaN(playerCount) && playerCount > 0) {
+          if (playerCount < game.minPlayers || playerCount > game.maxPlayers) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      renderGames(filtered);
+    }
+
+    // 開啟詳細 Modal
+    function openModal(id) {
+      const game = boardGamesDatabase.find(g => g.id === id);
+      if (!game) return;
+
+      document.getElementById('modalTitle').textContent = game.name;
+      document.getElementById('modalMeta').innerHTML = `
+        <b>類型：</b>${game.type} | 
+        <b>適合人數：</b>${game.minPlayers}-${game.maxPlayers}人 | 
+        <b>預估時間：</b>${game.timeText}<br>
+        <b>輔導目的標籤：</b>${game.goals.join('、')}
+      `;
+      document.getElementById('modalCounseling').textContent = game.counselingAdvice;
+      document.getElementById('modalGoal').textContent = game.goalText;
+
+      const stepsList = document.getElementById('modalSteps');
+      stepsList.innerHTML = game.steps.map(step => `<li>${step}</li>`).join('');
+
+      document.getElementById('gameModal').style.display = 'flex';
+    }
+
+    // 關閉 Modal
+    function closeModal() {
+      document.getElementById('gameModal').style.display = 'none';
+    }
+
+    // 點擊 Modal 背景自動關閉
+    window.onclick = function(event) {
+      const modal = document.getElementById('gameModal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+
+    // 初始化頁面渲染全部 23 款桌遊
+    document.addEventListener('DOMContentLoaded', () => {
+      renderGames(boardGamesDatabase);
+    });
+  </script>
+</body>
+</html>
